@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import date
 import ipdb
-
+from pprint import pprint
 connection = sqlite3.connect('Todo_list_2.db')
 connection.row_factory = sqlite3.Row
 cursor = connection.cursor()
@@ -22,25 +22,39 @@ def main():
         if new_com[:4] == 'todo':
             todo(new_com[5:])
         if new_com[:5] == 'list ':
-            list_function(new_com[5:])
+            list_all(new_com[5:])
+        if new_com[:7] == 'delete ':
+            delete(new_com[7:])
 
-
+#opens text help document
 def help_main():
     f = open('todo_help.txt', 'r')
     print(f.read())
 
+
 def todo(item):
     if item[:4] == 'edit':
-        select_function(item[4:])
-        row = cursor.fetchone()
-        print(row['Message'], row['Date'])
-
+        list_single(item[5:])
     else:
-        cursor.execute('INSERT INTO list(Message, Date) VALUES(?,?)', (item, d3))
+        cursor.execute('INSERT INTO list(Message, Date, STATUS) VALUES(?,?,?)', (item, d3, 0))
         connection.commit()
-        connection.close()
 
-def list_function(item):
+
+#Lists single item from todo
+def list_single(id_name):
+    try:
+        select_function(id_name)
+        row = cursor.fetchone()
+        print('\n')
+        print('#      STATUS         ITEM                        DATE')
+        print('========================================================')
+        print(str(row['id_name'])+ '  '+ status(row['STATUS'])+'   ' + row['Message']+ '           ' +row['Date'])
+        print('\n')
+    except TypeError:
+        print('There is no item with that ID number.')
+
+#Lists all items in todo
+def list_all(item):
     if item[3:] == 'all':
         id_db = fetchall()
         if len(id_db) == 0:
@@ -52,9 +66,9 @@ def list_function(item):
                 print(row['Message'], row['Date'])
 
 
-
+#Selects certain items from sqlite db
 def select_function(id_name):
-    print(cursor.execute('SELECT*FROM list WHERE id_name=?', id_name))
+    return cursor.execute('SELECT*FROM list WHERE id_name=?', id_name)
 
 # grabs IDs from db file, very important
 def fetchall():
@@ -66,6 +80,17 @@ def fetchall():
         print(row)
     return id_db
 
+#returns status of todo item
+def status(row_status):
+    if row_status == 1:
+        return 'X COMPLETED'
+    else:
+        return '  NOT COMPLETED'
+
+#Deletes single item, function used later one
+def delete(item):
+    cursor.execute('DELETE FROM list WHERE id_name = ?', item)
+    connection.commit()
 
 
 main()
