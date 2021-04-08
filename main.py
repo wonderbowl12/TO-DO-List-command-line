@@ -2,10 +2,12 @@ import sqlite3
 from datetime import date
 import random
 
+# connects to db file
 connection = sqlite3.connect('Todo_list_2.db')
 connection.row_factory = sqlite3.Row
 cursor = connection.cursor()
-# Prints the start up
+
+# Prints the start up title, date, and tips
 print('Welcome to DA To-Do List')
 today = date.today()
 d2 = today.strftime("%B %d, %Y")
@@ -34,6 +36,8 @@ def main():
             flag(new_com[5:])
         if new_com[:5] == 'done ':
             done(new_com[5:])
+        if new_com[:5] == 'date ':
+            dateInOrder()
 
 
 # opens text help document
@@ -64,20 +68,28 @@ def newLine(text, lineLength):
     if len(text) <= lineLength:
         return text
     else:
-        return text[:lineLength] + '\n' + ' ' * 21 + newLine(text[lineLength:], lineLength)
+        return text[:lineLength] + '\n' + ' ' * 40 + newLine(text[lineLength:], lineLength)
+
+
+# returns status of to-do item
+def status(row_status):
+    if row_status == 1:
+        return '  X COMPLETED'
+    else:
+        return '  NOT COMPLETED'
 
 
 # prints row of data from sql db
 def print_item(row):
-    print(str(row['id_name']) + '  ' + status(row['STATUS']) + '   ' + newLine(row['Message'], 25) + ' ' * 20 + row[
-        'Date'])
+    print(str(row['id_name']) + '  ' * 2 + row['Date'] + '  ' * 2 + status(row['STATUS']) + ' ' * 8 + newLine(
+        row['Message'], 30))
     print('')
 
 
 # prints the banner whenever a to-do list is printed
 def print_banner():
-    print('#      STATUS                TODO                        DATE'
-          '\n====================================================================')
+    print('#      DATE        STATUS                        TODO'
+          '\n=========================================================================')
 
 
 # Creates 4 attributes, message, date, status (always 0), and flagged (always 0), if user wants to edit the
@@ -86,12 +98,11 @@ def todo(item):
     if item[:4] == 'edit':
         print_banner()
         list_single(item[5:])
-        cursor.execute('UPDATE list SET Message=? WHERE id_name =?', (input('Update message >>> '), item[5:]))
-        connection.commit()
+        update('Message', input('Update Item Description >>> '), item[5:])
         print('Todo item {} updated.'.format(item[5:]))
     else:
         cursor.execute('INSERT INTO list(Message, Date, STATUS, FLAGGED ) VALUES(?,?,?,?)', (item, d3, 0, 0))
-        connection.commit()
+    connection.commit()
 
 
 # Lists single item from to-do, used in list all function
@@ -128,14 +139,6 @@ def fetchall():
     return id_db
 
 
-# returns status of to-do item
-def status(row_status):
-    if row_status == 1:
-        return '  X COMPLETED'
-    else:
-        return '  NOT COMPLETED'
-
-
 # item is the id and flagged is either a 1 (flag) or 0 (unflag)
 def flag(id_name):
     select_function(id_name)
@@ -161,7 +164,7 @@ def check_flag(id_name):
             print_item(row)
         else:
             pass
-    print('=' * 68)
+    print('=' * 73)
 
 
 def done(id_name):
@@ -174,6 +177,14 @@ def done(id_name):
         update('STATUS', 0, id_name)
         print('Item {} has been marked \'Not completed\''.format(id_name))
     connection.commit()
+
+
+def dateInOrder():
+    dates = []
+    id_db = fetchall()
+    row = cursor.fetchone()
+    select_function(1)
+    print(row['date'])
 
 
 main()
