@@ -15,7 +15,9 @@ print('Today is ' + d2)
 d3 = today.strftime("%m/%d/%y")
 tips = ['Don\'t forget to type \' help \' if you need it!\n', 'Flagged items will always be shown right underneath\n'
                                                               'the flagged banner. If there is nothing there then\n'
-                                                              'no items are flagged!']
+                                                              'no items are flagged!',
+        'If an item is flagged, you will ALWAYS\n'
+        'be asked for permission before deleting. ']
 
 
 # Main function
@@ -23,21 +25,24 @@ def main():
     print('Tip: ' + random.choice(tips))
     while True:
         command = input('>>> ')
-        new_com = command.lower()
-        if new_com == 'help':
+        if command.lower() == 'help':
             help_main()
-        if new_com[:4] == 'todo':
-            todo(new_com[5:])
-        if new_com[:8] == 'list all':
-            list_all(new_com[5:])
-        if new_com[:7] == 'delete ':
-            delete(new_com[7:])
-        if new_com[:5] == 'flag ':
-            flag(new_com[5:])
-        if new_com[:5] == 'done ':
-            done(new_com[5:])
-        if new_com[:5] == 'date ':
-            dateInOrder()
+        if command.lower()[:4] == 'todo':
+            todo(command[5:])
+        if command.lower()[:10] == 'todo edit ':
+            todo_edit(command[10:])
+        if command.lower()[:8] == 'list all':
+            list_all(command[5:])
+        if command.lower()[:10] == 'delete all':
+            delete_all()
+        elif command.lower()[:7] == 'delete ':
+            delete(command[7:])
+        if command.lower()[:5] == 'flag ':
+            flag(command[5:])
+        if command.lower()[:8] == 'done all':
+            done_all()
+        elif command.lower()[:5] == 'done ':
+            done(command[5:])
 
 
 # opens text help document
@@ -58,9 +63,31 @@ def update(attribute, atr_update, id_name):
 
 # Deletes single item, function used in different delete functions
 def delete(item):
-    cursor.execute('DELETE FROM list WHERE id_name = ?', item)
-    print('Item {} deleted.'.format(item))
-    connection.commit()
+    select_function(str(item))
+    row = cursor.fetchone()
+    if row['FLAGGED'] == 1:
+        delete_flag(item)
+    else:
+        cursor.execute('DELETE FROM list WHERE id_name = ?', item)
+        print('Item {} deleted.'.format(item))
+        connection.commit()
+
+
+# If item is flagged this function confirms before deleting it
+def delete_flag(item):
+    if input('{} is a flagged item, are you sure you want to delete? '.format(item)).lower() == 'yes':
+        cursor.execute('DELETE FROM list WHERE id_name = ?', item)
+        print('Item {} deleted.'.format(item))
+        connection.commit()
+    else:
+        print('Command not recognized.')
+
+
+# deletes all to-do items
+def delete_all():
+    id_db = fetchall()
+    for id_name in id_db:
+        delete(str(id_name))
 
 
 # recursively adds a newline every nth character for printing the message to make sure everything fits
@@ -92,17 +119,18 @@ def print_banner():
           '\n=========================================================================')
 
 
-# Creates 4 attributes, message, date, status (always 0), and flagged (always 0), if user wants to edit the
+# Creates 4 attributes, message, date, status (default 0), and flagged (default 0), if user wants to edit the
 # code then updates the .db file
 def todo(item):
-    if item[:4] == 'edit':
-        print_banner()
-        list_single(item[5:])
-        update('Message', input('Update Item Description >>> '), item[5:])
-        print('Todo item {} updated.'.format(item[5:]))
-    else:
-        cursor.execute('INSERT INTO list(Message, Date, STATUS, FLAGGED ) VALUES(?,?,?,?)', (item, d3, 0, 0))
+    cursor.execute('INSERT INTO list(Message, Date, STATUS, FLAGGED ) VALUES(?,?,?,?)', (item, d3, 0, 0))
     connection.commit()
+
+
+def todo_edit(item):
+    print_banner()
+    list_single(item)
+    update('Message', input('Update Item Description >>> '), item)
+    print('Todo item {} updated.'.format(item))
 
 
 # Lists single item from to-do, used in list all function
@@ -179,12 +207,16 @@ def done(id_name):
     connection.commit()
 
 
-def dateInOrder():
-    dates = []
+def done_all():
     id_db = fetchall()
-    row = cursor.fetchone()
-    select_function(1)
-    print(row['date'])
+    for id_name in id_db:
+        select_function(str(id_name))
+        row = cursor.fetchone()
+        if row['STATUS'] == 1:
+            pass
+        else:
+            update('STATUS', 1, id_name)
+    print('All items have been marked \'Completed!\'')
 
 
 main()
