@@ -1,6 +1,6 @@
 # TO-DO-List-command-line
 
-Simple TO-DO list that runs with a command-line type input. Shows the date created, the status of the task, and the task itself. Also will show if an item is flagged, which will be displayed at the very top of every list. A good feature would be the ability to create different To-Do lists but I will do this at another time. 
+Simple TO-DO list that runs with a command-line type input, uses sqlite3 to store the data. Shows the date created, the status of the task, and the task itself. Also will show if an item is flagged, which will be displayed at the very top of every list. A good feature would be the ability to create different To-Do lists but I will do this at another time. 
 
 ##Features
 
