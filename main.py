@@ -1,3 +1,5 @@
+
+
 import sqlite3
 from datetime import date
 import random
@@ -157,7 +159,7 @@ def todo(item):
     connection.commit()
     list_all('all')
 
-
+# Allows user to edit task description
 def todo_edit(id_name):
     print_banner()
     list_single(id_name)
@@ -227,7 +229,7 @@ def check_flag(id_name):
             pass
     print('=' * 73)
 
-
+# Marks item as done if not completed and marks completed if not completed
 def done(id_name):
     select_function(id_name)
     row = cursor.fetchone()
@@ -240,7 +242,7 @@ def done(id_name):
     connection.commit()
     list_all('all')
 
-
+# Completes all items in task list
 def done_all():
     id_db = fetchall()
     for id_name in id_db:
