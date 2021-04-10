@@ -23,6 +23,7 @@ tips = ['Don\'t forget to type \' help \' if you need it!\n', 'Flagged items wil
 # Main function
 def main():
     print('Tip: ' + random.choice(tips))
+
     while True:
         command = input('>>> ')
         if command.lower() == 'help':
@@ -35,14 +36,29 @@ def main():
             list_all(command[5:])
         if command.lower()[:10] == 'delete all':
             delete_all()
+        if command.lower() == 'delete done':
+            delete_completed()
         elif command.lower()[:7] == 'delete ':
-            delete(command[7:])
+            try:
+                delete(command[7:])
+            except Exception:
+                error()
         if command.lower()[:5] == 'flag ':
-            flag(command[5:])
+            try:
+                flag(command[5:])
+            except Exception:
+                error()
         if command.lower()[:8] == 'done all':
             done_all()
         elif command.lower()[:5] == 'done ':
-            done(command[5:])
+            try:
+                done(command[5:])
+            except Exception:
+                error()
+
+
+def error():
+    print('Command not recognized.')
 
 
 # opens text help document
@@ -90,6 +106,21 @@ def delete_all():
         delete(str(id_name))
 
 
+# Delete completed items
+def delete_completed():
+    id_db = fetchall()
+    for id_name in id_db:
+        select_function(str(id_name))
+        row = cursor.fetchone()
+        if row['STATUS'] == 1:
+            cursor.execute('DELETE FROM list WHERE id_name=?', str(id_name))
+            connection.commit()
+        else:
+            pass
+
+    print('All \'Completed\' items deleted.')
+
+
 # recursively adds a newline every nth character for printing the message to make sure everything fits
 def newLine(text, lineLength):
     if len(text) <= lineLength:
@@ -101,7 +132,7 @@ def newLine(text, lineLength):
 # returns status of to-do item
 def status(row_status):
     if row_status == 1:
-        return '  X COMPLETED'
+        return '    X COMPLETED'
     else:
         return '  NOT COMPLETED'
 
@@ -124,6 +155,7 @@ def print_banner():
 def todo(item):
     cursor.execute('INSERT INTO list(Message, Date, STATUS, FLAGGED ) VALUES(?,?,?,?)', (item, d3, 0, 0))
     connection.commit()
+    list_all('all')
 
 
 def todo_edit(item):
@@ -131,6 +163,7 @@ def todo_edit(item):
     list_single(item)
     update('Message', input('Update Item Description >>> '), item)
     print('Todo item {} updated.'.format(item))
+    list_all('all')
 
 
 # Lists single item from to-do, used in list all function
@@ -205,6 +238,7 @@ def done(id_name):
         update('STATUS', 0, id_name)
         print('Item {} has been marked \'Not completed\''.format(id_name))
     connection.commit()
+    list_all('all')
 
 
 def done_all():
@@ -217,6 +251,7 @@ def done_all():
         else:
             update('STATUS', 1, id_name)
     print('All items have been marked \'Completed!\'')
+    list_all('all')
 
 
 main()
