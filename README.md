@@ -14,6 +14,8 @@ Simple TO-DO list that runs with a command-line type input, uses sqlite3 to stor
 
 **DELETE ALL**		Deletes all tasks in database.
 
+**DELETE DONE** 	Deletes all completed items.
+
 **TODO ...**		Creates new todo task.
 
 **TODO EDIT #**		Allows you to edit the todo item.
