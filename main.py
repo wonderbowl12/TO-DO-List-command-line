@@ -78,22 +78,22 @@ def update(attribute, atr_update, id_name):
 
 
 # Deletes single item, function used in different delete functions
-def delete(item):
-    select_function(str(item))
+def delete(id_name):
+    select_function(str(id_name))
     row = cursor.fetchone()
     if row['FLAGGED'] == 1:
-        delete_flag(item)
+        delete_flag(id_name)
     else:
-        cursor.execute('DELETE FROM list WHERE id_name = ?', item)
-        print('Item {} deleted.'.format(item))
+        cursor.execute('DELETE FROM list WHERE id_name = ?', id_name)
+        print('Item {} deleted.'.format(id_name))
         connection.commit()
 
 
 # If item is flagged this function confirms before deleting it
-def delete_flag(item):
-    if input('{} is a flagged item, are you sure you want to delete? '.format(item)).lower() == 'yes':
-        cursor.execute('DELETE FROM list WHERE id_name = ?', item)
-        print('Item {} deleted.'.format(item))
+def delete_flag(id_name):
+    if input('{} is a flagged item, are you sure you want to delete? '.format(id_name)).lower() == 'yes':
+        cursor.execute('DELETE FROM list WHERE id_name = ?', id_name)
+        print('Item {} deleted.'.format(id_name))
         connection.commit()
     else:
         print('Command not recognized.')
@@ -158,11 +158,11 @@ def todo(item):
     list_all('all')
 
 
-def todo_edit(item):
+def todo_edit(id_name):
     print_banner()
-    list_single(item)
-    update('Message', input('Update Item Description >>> '), item)
-    print('Todo item {} updated.'.format(item))
+    list_single(id_name)
+    update('Message', input('Update Item Description >>> '), id_name)
+    print('Todo item {} updated.'.format(id_name))
     list_all('all')
 
 
